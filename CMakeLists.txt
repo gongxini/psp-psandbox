@@ -30,7 +30,7 @@ set(RDB_DIR ${CMAKE_SOURCE_DIR}/submodules/rocksdb)
 set(RDB_LIBRARIES gflags snappy z lz4 jemalloc)
 function(target_add_rocksdb TARGET)
     target_include_directories(${TARGET} PUBLIC ${RDB_DIR}/include/rocksdb)
-    target_link_libraries(${TARGET} ${RDB_DIR}/librocksdb.a)
+    target_link_libraries(${TARGET} ${RDB_DIR}/librocksdb.so)
     target_link_libraries(${TARGET} ${RDB_LIBRARIES})
 endfunction(target_add_rocksdb)
 

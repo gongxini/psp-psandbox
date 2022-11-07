@@ -24,7 +24,7 @@ int dpdk_net_init(const char *app_cfg_filename) {
         init_cargs.push_back(const_cast<char *>(i->c_str()));
     }
     std::cerr << "]" << std::endl;
-
+  printf("hehe\n");
     int unused = -1;
     PSP_OK(rte_eal_init(unused, init_cargs.size(), init_cargs.data()));
     const uint16_t nb_ports = rte_eth_dev_count_avail();

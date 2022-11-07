@@ -135,19 +135,19 @@ int Worker::launch() {
         return -1;
     }
 
-    if (eal_thread) {
-        PSP_OK(rte_eal_wait_lcore(this->cpu_id));
-        PSP_INFO(
-            "Starting EAL worker " << this->worker_id <<
-            " on CPU " << this->cpu_id
-        );
-        PSP_OK(rte_eal_remote_launch(
-            (lcore_function_t*)&Worker::main_loop, (void*)this, this->cpu_id
-        ));
-    } else {
+//    if (eal_thread) {
+//        PSP_OK(rte_eal_wait_lcore(this->cpu_id));
+//        PSP_INFO(
+//            "Starting EAL worker " << this->worker_id <<
+//            " on CPU " << this->cpu_id
+//        );
+//        PSP_OK(rte_eal_remote_launch(
+//            (lcore_function_t*)&Worker::main_loop, (void*)this, this->cpu_id
+//        ));
+//    } else {
         PSP_INFO("Starting worker " << this->worker_id);
         worker_thread = std::thread(&Worker::main_loop, this);
-    }
+//    }
 
     // Wait for the thread to start
     while (!started && !exited) {

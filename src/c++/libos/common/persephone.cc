@@ -11,6 +11,7 @@
 #include <psp/libos/su/DispatchSu.hh>
 #include <psp/libos/su/RocksdbSu.hh>
 #include <psp/annot.h>
+#include "psp/libos/su/MySQLSu.hh"
 
 std::string log_dir = "./";
 std::string label = "PspApp";
@@ -21,7 +22,7 @@ uint32_t total_workers = 0;
 Psp::Psp(std::string &app_cfg, std::string l) {
     label = l;
     /* Let network libOS init its specific EAL */
-    dpdk_net_init(app_cfg.c_str());
+//    dpdk_net_init(app_cfg.c_str());
 
     /* Parse the configuration */
     try {
@@ -44,6 +45,7 @@ Psp::Psp(std::string &app_cfg, std::string l) {
         std::string mac = config["network"]["mac"].as<std::string>();
         port_id = config["network"]["device_id"].as<uint16_t>();
         size_t n_net_workers = 0;
+
         if (config["net_workers"].IsDefined()) {
             YAML::Node net_workers = config["net_workers"];
             if (net_workers.size() > cpus.size()) {
@@ -62,10 +64,10 @@ Psp::Psp(std::string &app_cfg, std::string l) {
 
                 uint16_t port = net_workers[i]["port"].as<uint16_t>();
                 struct in_addr ip;
-                inet_aton(net_workers[i]["ip"].as<std::string>().c_str(), &ip);
-                net_worker->udp_ctx = new UdpContext(
-                    i, ip, port, port_id, &net_mempool, mac
-                );
+//                inet_aton(net_workers[i]["ip"].as<std::string>().c_str(), &ip);
+//                net_worker->udp_ctx = new UdpContext(
+//                    i, ip, port, port_id, &net_mempool, mac
+//                );
                 n_tqs++;
                 n_rqs++;
 
@@ -94,18 +96,24 @@ Psp::Psp(std::string &app_cfg, std::string l) {
             YAML::Node workers = config["workers"];
             uint32_t n_workers = workers["number"].as<uint32_t>();
             std::string type = workers["type"].as<std::string>();
+
             for (size_t i = n_net_workers; i < n_workers + n_net_workers; ++i) {
                 // Set UDP context
-                UdpContext *udp_ctx = new UdpContext(
-                    i, netw->udp_ctx->ip, netw->udp_ctx->port,
-                    port_id, &net_mempool, mac
-                );
+
+//                UdpContext *udp_ctx = new UdpContext(
+//                    i, netw->udp_ctx->ip, netw->udp_ctx->port,
+//                    port_id, &net_mempool, mac
+//                );
+              UdpContext *udp_ctx;
+
                 n_tqs++;
                 // Create worker instance
                 if (type == "MB" or type == "TPCC") {
                     CreateWorker<MbWorker>(i, &dpt, netw, udp_ctx);
                 } else if (type == "ROCKSDB") {
                     CreateWorker<RdbWorker>(i, &dpt, netw, udp_ctx);
+                } else if (type == "MySQLDB") {
+                  CreateWorker<MySQLWorker>(i, &dpt, netw, udp_ctx);
                 }
                 // Update dispatcher
                 dpt.n_workers++;
@@ -245,9 +253,9 @@ Psp::Psp(std::string &app_cfg, std::string l) {
 
         /* Setup NIC ports */
         PSP_INFO("Setting up NIC ports");
-        if (init_dpdk_port(port_id, net_mempool, n_tqs, n_rqs) != 0) {
-            exit(1);
-        }
+//        if (init_dpdk_port(port_id, net_mempool, n_tqs, n_rqs) != 0) {
+//            exit(1);
+//        }
 
         /* Setup fdir on net worker rxqs */
         //netw->udp_ctx->set_fdir();
@@ -260,8 +268,8 @@ Psp::Psp(std::string &app_cfg, std::string l) {
 template <typename A, typename B, typename C>
 int Psp::CreateWorker(int idx, B *dpt, C *netw, UdpContext* udp_ctx) {
     A *worker = new A();
-    worker->udp_ctx = udp_ctx;
-    worker->register_dpt(*dpt);
+//    worker->udp_ctx = udp_ctx;
+//    worker->register_dpt(*dpt);
     worker->eal_thread = true;
     worker->cpu_id = cpus[idx];
     workers[idx] = worker;

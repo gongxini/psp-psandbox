@@ -1,33 +1,21 @@
 cpus:
 - 2
 - 4
-- 6
-- 8
-- 10
-- 12
-- 14
-- 16
-- 18
-- 20
-- 22
-- 24
-- 26
-- 28
-- 30
+
 log_dir: /tmpfs/experiments/
 n_resas: 0
 net_workers:
 - dp: CFCFS
-  ip: 192.168.10.10
+  ip: 127.0.0.1
   is_echo: 0
-  port: 6789
+  port: 8080
 network:
   device_id: 0
   eal_init:
   - -n
   - '2'
   - -l
-  - 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30
+  - 0, 2
   - --file-prefix
   - maxdml
   - -w
@@ -36,5 +24,5 @@ network:
 requests:
 - type: SHORT
 workers:
-  number: 14
-  type: MB
+  number: 4
+  type: MySQLDB

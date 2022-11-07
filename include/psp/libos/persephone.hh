@@ -46,7 +46,8 @@ enum class WorkerType {
     CLIENT,
     SILO,
     MBK,
-    RDB
+    RDB,
+    MySQL,
 };
 
 [[gnu::unused]] static const char *wt_str[] {

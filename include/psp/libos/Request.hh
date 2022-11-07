@@ -23,7 +23,9 @@ enum class ReqType {
     STOCK_LEVEL,
     GET,
     SCAN,
-    LAST
+    LAST,
+    VICTIM,
+    NOISY
 };
 
 [[gnu::unused]] static const char *req_type_str[] = {
