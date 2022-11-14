@@ -11,6 +11,7 @@
 #include <cppconn/statement.h>
 
 
+
 int MySQLWorker::setup() {
   assert(n_peers > 0);
   //pin_thread(pthread_self(), cpu_id);
@@ -27,39 +28,32 @@ int MySQLWorker::process_request(unsigned long payload) {
   char *type_addr = id_addr + sizeof(uint32_t);
   char *req_addr = type_addr + sizeof(uint32_t) * 2; // also pass request size
 
-  try {
-      sql::Driver *driver;
-      sql::Connection *con;
-      sql::Statement *stmt;
-      sql::ResultSet *res;
 
-      /* Create a connection */
-      driver = get_driver_instance();
-      con = driver->connect("tcp://127.0.0.1:3306", "yigonghu", "");
-      /* Connect to the MySQL test database */
-      con->setSchema("test");
+  sql::Driver *driver;
+  sql::Connection *con;
+  sql::Statement *stmt;
+  sql::ResultSet *res;
 
-      stmt = con->createStatement();
-    switch(static_cast<ReqType>(type)) {
-      case ReqType::NOISY:
-        res = stmt->executeQuery("select count(*) from sbtest1 for update;");
-        break;
-      case ReqType::VICTIM:
-        res = stmt->executeQuery("UPDATE sbtest1 SET k=k+1 WHERE id=10000;");
-        break;
-      default:
-        break;
-    }
+  /* Create a connection */
+  driver = get_driver_instance();
+  con = driver->connect("tcp://127.0.0.1:3306", "yigonghu", "");
+  /* Connect to the MySQL test database */
+  con->setSchema("test");
 
-      while (res->next()) {
-        PSP_INFO("MySQL replies: " <<  res->getString("_message"));
-      }
-      delete res;
-      delete stmt;
-      delete con;
+  stmt = con->createStatement();
+  switch(static_cast<ReqType>(type)) {
+    case ReqType::NOISY:
+      res = stmt->executeQuery("select count(*) from sbtest1 for update;");
+      break;
+    case ReqType::VICTIM:
+      res = stmt->executeQuery("UPDATE sbtest1 SET k=k+1 WHERE id=10000;");
+      break;
+    default:
+      break;
+  }
 
-  } catch (sql::SQLException &e) {
-    PSP_INFO("connection error");
+  while (res->next()) {
+    PSP_INFO("MySQL replies: " <<  res->getString("_message"));
   }
 
 
