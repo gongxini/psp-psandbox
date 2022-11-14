@@ -21,15 +21,15 @@ kernver() {
 }
 
 # Have the NIC use IGB_UIO for Perséphone and the client. Shinjuku has its own i40e driver.
-if [[ "$SYS_NAME" == "Persephone" || "$SYS_NAME" == "client" ]]; then
+if [[ "$SYS_NAME" == "psp-psandbox" || "$SYS_NAME" == "client" ]]; then
     # Disable turbo
-    sudo ${AE_DIR}/${SYS_NAME}/scripts/setup/turbo.sh disable
+    sudo ${SYS_NAME}/scripts/setup/turbo.sh disable
     # Unbind the NIC from the kernel driver
-    sudo ${AE_DIR}/${SYS_NAME}/submodules/dpdk/usertools/dpdk-devbind.py --force -u 18:00.1
+    sudo ${SYS_NAME}/submodules/dpdk/usertools/dpdk-devbind.py --force -u 18:00.1
     # Load uio to bypass the kernel and use the NIC. Need the module built for the kernel in use
     sudo modprobe uio
-    sudo insmod ${AE_DIR}/${SYS_NAME}/submodules/dpdk/x86_64-native-linuxapp-gcc/build/kernel/linux/igb_uio/igb_uio.ko
-    sudo ${AE_DIR}/${SYS_NAME}/submodules/dpdk/usertools/dpdk-devbind.py -b igb_uio 18:00.1
+    sudo insmod ${SYS_NAME}/submodules/dpdk/x86_64-native-linuxapp-gcc/build/kernel/linux/igb_uio/igb_uio.ko
+    sudo ${SYS_NAME}/submodules/dpdk/usertools/dpdk-devbind.py -b igb_uio 18:00.1
 fi
 
 if [[ "$SYS_NAME" == "Shenango" ]]; then

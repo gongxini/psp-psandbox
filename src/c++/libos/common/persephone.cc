@@ -64,10 +64,10 @@ Psp::Psp(std::string &app_cfg, std::string l) {
 
                 uint16_t port = net_workers[i]["port"].as<uint16_t>();
                 struct in_addr ip;
-//                inet_aton(net_workers[i]["ip"].as<std::string>().c_str(), &ip);
-//                net_worker->udp_ctx = new UdpContext(
-//                    i, ip, port, port_id, &net_mempool, mac
-//                );
+                inet_aton(net_workers[i]["ip"].as<std::string>().c_str(), &ip);
+                net_worker->udp_ctx = new UdpContext(
+                    i, ip, port, port_id, &net_mempool, mac
+                );
                 n_tqs++;
                 n_rqs++;
 
@@ -100,11 +100,10 @@ Psp::Psp(std::string &app_cfg, std::string l) {
             for (size_t i = n_net_workers; i < n_workers + n_net_workers; ++i) {
                 // Set UDP context
 
-//                UdpContext *udp_ctx = new UdpContext(
-//                    i, netw->udp_ctx->ip, netw->udp_ctx->port,
-//                    port_id, &net_mempool, mac
-//                );
-              UdpContext *udp_ctx;
+                UdpContext *udp_ctx = new UdpContext(
+                    i, netw->udp_ctx->ip, netw->udp_ctx->port,
+                    port_id, &net_mempool, mac
+                );
 
                 n_tqs++;
                 // Create worker instance
@@ -253,9 +252,9 @@ Psp::Psp(std::string &app_cfg, std::string l) {
 
         /* Setup NIC ports */
         PSP_INFO("Setting up NIC ports");
-//        if (init_dpdk_port(port_id, net_mempool, n_tqs, n_rqs) != 0) {
-//            exit(1);
-//        }
+        if (init_dpdk_port(port_id, net_mempool, n_tqs, n_rqs) != 0) {
+            exit(1);
+        }
 
         /* Setup fdir on net worker rxqs */
         //netw->udp_ctx->set_fdir();
@@ -268,8 +267,8 @@ Psp::Psp(std::string &app_cfg, std::string l) {
 template <typename A, typename B, typename C>
 int Psp::CreateWorker(int idx, B *dpt, C *netw, UdpContext* udp_ctx) {
     A *worker = new A();
-//    worker->udp_ctx = udp_ctx;
-//    worker->register_dpt(*dpt);
+    worker->udp_ctx = udp_ctx;
+    worker->register_dpt(*dpt);
     worker->eal_thread = true;
     worker->cpu_id = cpus[idx];
     workers[idx] = worker;
