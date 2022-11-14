@@ -39,5 +39,6 @@ CTestTestfile.cmake
 *pickle
 
 *pdf
-
+cmake-build-debug/
+.idea/
 experiments/**/

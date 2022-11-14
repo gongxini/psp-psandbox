@@ -14,7 +14,7 @@ class MySQLWorker : public Worker {
 
  public : ~MySQLWorker() {
     log_info(
-        "MySQLWorker worker %d processed %u requests (%u GETs, %u SCANs), dropped %lu requests",
+        "MySQLWorker worker %d processed %u requests (%u VICTIM, %u NOISY), dropped %lu requests for 60 seconds",
         worker_id, n_requests, n_noisy, n_victim, n_drops
     );
   }

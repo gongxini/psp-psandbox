@@ -2,7 +2,7 @@ cpus:
 - 2
 - 4
 
-log_dir: /tmpfs/experiments/
+log_dir: /tmp/experiments/
 n_resas: 0
 net_workers:
 - dp: CFCFS
@@ -22,7 +22,8 @@ network:
   - '0000:18:00.1'
   mac: '42:42:42:42:42:01'
 requests:
-- type: SHORT
+- type: NOISY
+- type: VICTIM
 workers:
   number: 4
   type: MySQLDB

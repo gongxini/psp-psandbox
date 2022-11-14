@@ -22,7 +22,7 @@ uint32_t total_workers = 0;
 Psp::Psp(std::string &app_cfg, std::string l) {
     label = l;
     /* Let network libOS init its specific EAL */
-//    dpdk_net_init(app_cfg.c_str());
+    dpdk_net_init(app_cfg.c_str());
 
     /* Parse the configuration */
     try {
