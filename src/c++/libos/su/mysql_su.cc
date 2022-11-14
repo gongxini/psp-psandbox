@@ -42,11 +42,23 @@ int MySQLWorker::process_request(unsigned long payload) {
 
   stmt = con->createStatement();
   switch(static_cast<ReqType>(type)) {
-    case ReqType::NOISY:
+    case ReqType::READ_UPDATE:
       res = stmt->executeQuery("select count(*) from sbtest1 for update;");
       break;
-    case ReqType::VICTIM:
+    case ReqType::UPDATE:
       res = stmt->executeQuery("UPDATE sbtest1 SET k=k+1 WHERE id=10000;");
+      break;
+    case ReqType::READ_LOCK:
+      res = stmt->executeQuery("select count(*) from sbtest1 LOCK IN SHARE MODE;");
+      break;
+    case ReqType::TRANSACTION:
+      res = stmt->executeQuery("begin;\n"
+                               "select c from sbtest1 limit 1;\n"
+                               "select sleep(10);\n"
+                               "commit;");
+      break;
+    case ReqType::UPDATE1:
+      res = stmt->executeQuery("UPDATE sbtest1 SET k=k+1 WHERE id=1;");
       break;
     default:
       break;
@@ -59,10 +71,10 @@ int MySQLWorker::process_request(unsigned long payload) {
 
   uint32_t type = *reinterpret_cast<uint32_t *>(type_addr);
   switch(static_cast<ReqType>(type)) {
-    case ReqType::NOISY:
+    case ReqType::READ_UPDATE:
       n_noisy++;
       break;
-    case ReqType::VICTIM:
+    case ReqType::UPDATE:
       n_victim++;
       break;
     default:

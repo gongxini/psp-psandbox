@@ -8,6 +8,7 @@ namespace po = boost::program_options;
 
 int NetWorker::setup() {
     //pin_thread(pthread_self(), cpu_id);
+
     PSP_NOTNULL(EPERM, udp_ctx);
     PSP_INFO("Set up net worker " << worker_id);
     return 0;

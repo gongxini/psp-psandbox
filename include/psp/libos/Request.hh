@@ -24,8 +24,11 @@ enum class ReqType {
     GET,
     SCAN,
     LAST,
-    VICTIM,
-    NOISY
+  UPDATE,
+  READ_UPDATE,
+  READ_LOCK,
+  TRANSACTION,
+  UPDATE1
 };
 
 [[gnu::unused]] static const char *req_type_str[] = {

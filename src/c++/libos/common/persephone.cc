@@ -73,7 +73,7 @@ Psp::Psp(std::string &app_cfg, std::string l) {
 
                 workers[i] = net_worker;
                 PSP_INFO(
-                    "Created server net worker " << net_worker->worker_id
+                    "Created server net worker " << net_worker->worker_id << "; the upd is " << (NULL != net_worker->udp_ctx)
                 );
 
                 Dispatcher &dpt = net_worker->dpt;
