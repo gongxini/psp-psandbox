@@ -41,24 +41,25 @@ int MySQLWorker::process_request(unsigned long payload) {
   con->setSchema("test");
 
   stmt = con->createStatement();
+  uint32_t type = *reinterpret_cast<uint32_t *>(type_addr);
   switch(static_cast<ReqType>(type)) {
-    case ReqType::READ_UPDATE:
+    case ReqType::MySQL_READ_UPDATE:
       res = stmt->executeQuery("select count(*) from sbtest1 for update;");
       break;
-    case ReqType::UPDATE:
-      res = stmt->executeQuery("UPDATE sbtest1 SET k=k+1 WHERE id=10000;");
+    case ReqType::MySQL_UPDATE:
+      res = stmt->executeQuery("MySQL_UPDATE sbtest1 SET k=k+1 WHERE id=10000;");
       break;
-    case ReqType::READ_LOCK:
+    case ReqType::MySQL_READ_LOCK:
       res = stmt->executeQuery("select count(*) from sbtest1 LOCK IN SHARE MODE;");
       break;
-    case ReqType::TRANSACTION:
+    case ReqType::MySQL_TRANSACTION:
       res = stmt->executeQuery("begin;\n"
                                "select c from sbtest1 limit 1;\n"
                                "select sleep(10);\n"
                                "commit;");
       break;
-    case ReqType::UPDATE1:
-      res = stmt->executeQuery("UPDATE sbtest1 SET k=k+1 WHERE id=1;");
+    case ReqType::MySQL_UPDATE1:
+      res = stmt->executeQuery("MySQL_UPDATE sbtest1 SET k=k+1 WHERE id=1;");
       break;
     default:
       break;
@@ -69,12 +70,11 @@ int MySQLWorker::process_request(unsigned long payload) {
   }
 
 
-  uint32_t type = *reinterpret_cast<uint32_t *>(type_addr);
   switch(static_cast<ReqType>(type)) {
-    case ReqType::READ_UPDATE:
+    case ReqType::MySQL_READ_UPDATE:
       n_noisy++;
       break;
-    case ReqType::UPDATE:
+    case ReqType::MySQL_UPDATE:
       n_victim++;
       break;
     default:

@@ -24,11 +24,16 @@ enum class ReqType {
     GET,
     SCAN,
     LAST,
-  UPDATE,
-  READ_UPDATE,
-  READ_LOCK,
-  TRANSACTION,
-  UPDATE1
+  MySQL_UPDATE,
+  MySQL_READ_UPDATE,
+  MySQL_READ_LOCK,
+  MySQL_TRANSACTION,
+  MySQL_UPDATE1,
+  PostgreSQL_READ_UPDATE,
+  PostgreSQL_UPDATE,
+  PostgreSQL_READ_LOCK,
+  PostgreSQL_TRANSACTION,
+  PostgreSQL_VACUUM
 };
 
 [[gnu::unused]] static const char *req_type_str[] = {

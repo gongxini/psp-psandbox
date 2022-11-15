@@ -1,5 +1,5 @@
 //
-// Created by yigonghu on 11/7/22.
+// Created by yigonghu on 11/11/22.
 //
 
 #include <psp/libos/persephone.hh>
@@ -9,12 +9,12 @@
 #ifndef PERSEPHONE_SRC_C_LIBOS_SU_MYSQL_SU_H_
 #define PERSEPHONE_SRC_C_LIBOS_SU_MYSQL_SU_H_
 
-class MySQLWorker : public Worker {
- public: MySQLWorker() : Worker(WorkerType::MySQL) {}
+class PostgreSQLWorker : public Worker {
+ public: PostgreSQLWorker() : Worker(WorkerType::MySQL) {}
 
- public : ~MySQLWorker() {
+ public : ~PostgreSQLWorker() {
     log_info(
-        "MySQLWorker worker %d processed %u requests (%u MySQL_UPDATE, %u MySQL_READ_UPDATE), dropped %lu requests for 60 seconds",
+        "PostgreSQLWorker worker %d processed %u requests (%u MySQL_UPDATE, %u MySQL_READ_UPDATE), dropped %lu requests for 60 seconds",
         worker_id, n_requests, n_noisy, n_victim, n_drops
     );
   }
