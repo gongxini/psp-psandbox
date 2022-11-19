@@ -28,7 +28,7 @@ int MySQLWorker::process_request(unsigned long payload) {
   char *type_addr = id_addr + sizeof(uint32_t);
   char *req_addr = type_addr + sizeof(uint32_t) * 2; // also pass request size
 
-
+  try {
   sql::Driver *driver;
   sql::Connection *con;
   sql::Statement *stmt;
@@ -46,9 +46,12 @@ int MySQLWorker::process_request(unsigned long payload) {
     case ReqType::MySQL_READ_UPDATE:
       res = stmt->executeQuery("select count(*) from sbtest1 for update;");
       break;
-    case ReqType::MySQL_UPDATE:
-      res = stmt->executeQuery("MySQL_UPDATE sbtest1 SET k=k+1 WHERE id=10000;");
+    case ReqType::MySQL_UPDATE: {
+      int id = rand() % 10000 + 1;
+      std::string query = "UPDATE sbtest1 SET k=k+1 WHERE id=" + std::to_string(id);
+      res = stmt->executeQuery(query);
       break;
+    }
     case ReqType::MySQL_READ_LOCK:
       res = stmt->executeQuery("select count(*) from sbtest1 LOCK IN SHARE MODE;");
       break;
@@ -66,9 +69,12 @@ int MySQLWorker::process_request(unsigned long payload) {
   }
 
   while (res->next()) {
-    PSP_INFO("MySQL replies: " <<  res->getString("_message"));
+//    PSP_INFO("MySQL replies: " <<  res->getString("_message"));
+//PSP_INFO("MySQL Finish: " <<  res->getString("_message"));
   }
-
+  } catch (sql::SQLException &e) {
+    PSP_INFO("# ERR: SQLException in " << __FILE__ <<  "(" << __FUNCTION__ << ") on line " << __LINE__ )
+  }
 
   switch(static_cast<ReqType>(type)) {
     case ReqType::MySQL_READ_UPDATE:
