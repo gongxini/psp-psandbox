@@ -75,14 +75,10 @@ enum class ReqType {
         return ReqType::SCAN;
     } else if (type == "MySQL_UPDATE") {
       return ReqType::MySQL_UPDATE;
-    }  else if (type == "MySQL_READ_UPDATE") {
-      return ReqType::MySQL_READ_UPDATE;
-    }  else if (type == "MySQL_READ_LOCK") {
-      return ReqType::MySQL_READ_LOCK;
-    }  else if (type == "MySQL_TRANSACTION") {
-      return ReqType::MySQL_TRANSACTION;
-    }  else if (type == "MySQL_UPDATE1") {
-      return ReqType::MySQL_UPDATE1;
+    } else if (type == "MySQL_READ") {
+      return ReqType::MySQL_READ;
+    }  else if (type == "MySQL_INSERT") {
+      return ReqType::MySQL_INSERT;
     }
     return ReqType::UNKNOWN;
 }
