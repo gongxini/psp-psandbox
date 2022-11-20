@@ -35,8 +35,9 @@ network:
   - '0000:18:00.1'
   mac: '42:42:42:42:42:01'
 requests:
-- type: MySQL_READ_UPDATE
+- type: MySQL_READ
 - type: MySQL_UPDATE
+- type: MySQL_INSERT
 workers:
-  number: 4
+  number: 6
   type: MySQLDB

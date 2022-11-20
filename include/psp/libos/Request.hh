@@ -23,15 +23,10 @@ enum class ReqType {
     STOCK_LEVEL,
     GET,
     SCAN,
-    LAST,
     MySQL_UPDATE,
     MySQL_READ,
     MySQL_INSERT,
-  PostgreSQL_READ_UPDATE,
-  PostgreSQL_UPDATE,
-  PostgreSQL_READ_LOCK,
-  PostgreSQL_TRANSACTION,
-  PostgreSQL_VACUUM
+    LAST,
 };
 
 
@@ -47,7 +42,10 @@ enum class ReqType {
     "OrderStatus",
     "StockLevel",
     "GET",
-    "SCAN"
+    "SCAN",
+    "MySQL_UPDATE",
+    "MySQL_READ",
+    "MySQL_INSERT",
 };
 
 [[gnu::unused]] static enum ReqType str_to_type(std::string const &type) {
