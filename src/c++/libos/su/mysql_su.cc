@@ -27,12 +27,12 @@ int MySQLWorker::process_request(unsigned long payload) {
 
   char *type_addr = id_addr + sizeof(uint32_t);
   char *req_addr = type_addr + sizeof(uint32_t) * 2; // also pass request size
-
-  try {
   sql::Driver *driver;
   sql::Connection *con;
   sql::Statement *stmt;
   sql::ResultSet *res;
+  try {
+
 
   /* Create a connection */
   driver = get_driver_instance();
@@ -42,51 +42,68 @@ int MySQLWorker::process_request(unsigned long payload) {
 
   stmt = con->createStatement();
   uint32_t type = *reinterpret_cast<uint32_t *>(type_addr);
+  uint32_t query_type = *reinterpret_cast<unsigned int *>(req_addr);
   switch(static_cast<ReqType>(type)) {
-    case ReqType::MySQL_READ_UPDATE:
-      res = stmt->executeQuery("select count(*) from sbtest1 for update;");
-      break;
-    case ReqType::MySQL_UPDATE: {
-      int id = rand() % 10000 + 1;
-      std::string query = "UPDATE sbtest1 SET k=k+1 WHERE id=" + std::to_string(id);
-      res = stmt->executeQuery(query);
+    case ReqType::MySQL_READ: {
+      std::string query;
+      if (query_type == 0) {
+        query = "select count(*) from sbtest1 for update;";
+      } else if(query_type == 1) {
+        query = "select count(*) from sbtest1 LOCK IN SHARE MODE;";
+      } else if (query_type == 2) {
+        query = "begin; select c from sbtest1 limit 1;select sleep(10);commit;";
+      } else if (query_type == 3) {
+        int id = rand() % 10000 + 1;
+        query = "select * from sbtest1 where id = " + std::to_string(id) + ";";
+      }
+      stmt->executeQuery(query);
       break;
     }
-    case ReqType::MySQL_READ_LOCK:
-      res = stmt->executeQuery("select count(*) from sbtest1 LOCK IN SHARE MODE;");
+    case ReqType::MySQL_UPDATE: {
+      std::string query;
+      if (query_type == 0) {
+        int id = rand() % 10000 + 1;
+        query = "UPDATE sbtest1 SET k=k+1 WHERE id=" + std::to_string(id) + ";";
+      } else if (query_type == 1) {
+        query = "UPDATE sbtest1 SET k=k+1 WHERE id=1;";
+      }
+      stmt->executeUpdate(query);
       break;
-    case ReqType::MySQL_TRANSACTION:
-      res = stmt->executeQuery("begin;\n"
-                               "select c from sbtest1 limit 1;\n"
-                               "select sleep(10);\n"
-                               "commit;");
-      break;
-    case ReqType::MySQL_UPDATE1:
-      res = stmt->executeQuery("MySQL_UPDATE sbtest1 SET k=k+1 WHERE id=1;");
+    }
+    case ReqType::MySQL_INSERT:
+      stmt->executeQuery("INSERT INTO sbtest (k, c, pad) VALUES");
       break;
     default:
       break;
   }
 
-  while (res->next()) {
+//  while (res->next()) {
 //    PSP_INFO("MySQL replies: " <<  res->getString("_message"));
 //PSP_INFO("MySQL Finish: " <<  res->getString("_message"));
-  }
+//  }
+
+
+  delete stmt;
+  delete con;
+
   } catch (sql::SQLException &e) {
     PSP_INFO("# ERR: SQLException in " << __FILE__ <<  "(" << __FUNCTION__ << ") on line " << __LINE__ )
+    PSP_INFO("# ERR: " << e.what() <<  "(MySQL error code: " << e.getErrorCode() << ", SQLState: " << e.getSQLState() << ")" << worker_id)
+    delete stmt;
+    delete con;
   }
 
-  switch(static_cast<ReqType>(type)) {
-    case ReqType::MySQL_READ_UPDATE:
-      n_noisy++;
-      break;
-    case ReqType::MySQL_UPDATE:
-      n_victim++;
-      break;
-    default:
-      break;
-  }
-  n_requests++;
+//  switch(static_cast<ReqType>(type)) {
+//    case ReqType::MySQL_READ_UPDATE:
+//      n_noisy++;
+//      break;
+//    case ReqType::MySQL_UPDATE:
+//      n_victim++;
+//      break;
+//    default:
+//      break;
+//  }
+//  n_requests++;
 
   // Set response size to 0
   *reinterpret_cast<uint32_t *> (req_addr) = 0;
