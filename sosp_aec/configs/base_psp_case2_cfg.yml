@@ -39,5 +39,5 @@ requests:
 - type: MySQL_UPDATE
 - type: MySQL_INSERT
 workers:
-  number: 15
+  number: 14
   type: MySQLDB
