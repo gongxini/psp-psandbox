@@ -44,35 +44,54 @@ int MySQLWorker::process_request(unsigned long payload) {
   uint32_t type = *reinterpret_cast<uint32_t *>(type_addr);
   uint32_t query_type = *reinterpret_cast<unsigned int *>(req_addr);
   switch(static_cast<ReqType>(type)) {
+  case ReqType::MySQL_UPDATE: {
+    std::string query;
+    if (query_type == 0) {
+      int id = rand() % 10000 + 1;
+      query = "UPDATE sbtest1 SET k=k+1 WHERE id=" + std::to_string(id) + ";";
+    } else if (query_type == 1) {
+      query = "UPDATE sbtest1 SET k=k+1 WHERE id=1;";
+    }
+    stmt->executeUpdate(query);
+    break;
+  }
     case ReqType::MySQL_READ: {
       std::string query;
       if (query_type == 0) {
         query = "select count(*) from sbtest1 for update;";
+        stmt->executeQuery(query);
       } else if(query_type == 1) {
         query = "select count(*) from sbtest1 LOCK IN SHARE MODE;";
+        stmt->executeQuery(query);
       } else if (query_type == 2) {
-        query = "begin; select c from sbtest1 limit 1;select sleep(10);commit;";
+        query = "START TRANSACTION;";
+        stmt->executeUpdate(query);
+        query = "select c from sbtest1 limit 1;";
+        stmt->executeQuery(query);
+        query = "select sleep(10);";
+        stmt->executeQuery(query);
+        query = "commit;";
+        stmt->executeUpdate(query);
       } else if (query_type == 3) {
         int id = rand() % 10000 + 1;
         query = "select * from sbtest1 where id = " + std::to_string(id) + ";";
+        stmt->executeQuery(query);
+      } else if (query_type == 4) {
+        int table_id = rand() % 5 + 2;
+        query = "select * from sbtest" + std::to_string(table_id) + " where id < 100 for update" ;
+        stmt->executeQuery(query);
       }
-      stmt->executeQuery(query);
       break;
     }
-    case ReqType::MySQL_UPDATE: {
-      std::string query;
-      if (query_type == 0) {
-        int id = rand() % 10000 + 1;
-        query = "UPDATE sbtest1 SET k=k+1 WHERE id=" + std::to_string(id) + ";";
-      } else if (query_type == 1) {
-        query = "UPDATE sbtest1 SET k=k+1 WHERE id=1;";
-      }
+    case ReqType::MySQL_INSERT: {
+      int k =  rand() % 10000 + 1;
+      int c =  rand() % 1000000 + 1;
+      int pad =  rand() % 1000000 + 1;
+      int table_id = rand() % 64 + 1;
+      std::string query = "INSERT INTO sbtest" + std::to_string(table_id) + " (id, k, c, pad) VALUES ( 0," + std::to_string(k) + ",\'" + std::to_string(c) + "\', \'" + std::to_string(pad) + "\')";
       stmt->executeUpdate(query);
       break;
     }
-    case ReqType::MySQL_INSERT:
-      stmt->executeQuery("INSERT INTO sbtest (k, c, pad) VALUES");
-      break;
     default:
       break;
   }

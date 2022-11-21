@@ -18,7 +18,7 @@ cpus:
 log_dir: /tmp/experiments/
 n_resas: 0
 net_workers:
-- dp: DARC
+- dp: CFCFS
   ip: 192.168.10.10
   is_echo: 0
   port: 6789
@@ -39,5 +39,5 @@ requests:
 - type: MySQL_UPDATE
 - type: MySQL_INSERT
 workers:
-  number: 6
+  number: 15
   type: MySQLDB
