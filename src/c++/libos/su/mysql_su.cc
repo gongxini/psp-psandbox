@@ -43,6 +43,7 @@ int MySQLWorker::process_request(unsigned long payload) {
   stmt = con->createStatement();
   uint32_t type = *reinterpret_cast<uint32_t *>(type_addr);
   uint32_t query_type = *reinterpret_cast<unsigned int *>(req_addr);
+  //PSP_INFO("type " << type << " query " << query_type)
   switch(static_cast<ReqType>(type)) {
   case ReqType::MySQL_UPDATE: {
     std::string query;
@@ -108,6 +109,7 @@ int MySQLWorker::process_request(unsigned long payload) {
   } catch (sql::SQLException &e) {
     PSP_INFO("# ERR: SQLException in " << __FILE__ <<  "(" << __FUNCTION__ << ") on line " << __LINE__ )
     PSP_INFO("# ERR: " << e.what() <<  "(MySQL error code: " << e.getErrorCode() << ", SQLState: " << e.getSQLState() << ")" << worker_id)
+    sleep(100);
     delete stmt;
     delete con;
   }
