@@ -115,7 +115,7 @@ class Worker {
 
 extern Worker *workers[MAX_WORKERS];
 extern uint32_t total_workers;
-
+extern uint16_t query_count;
 class Psp {
     /* HW related variables */
     std::vector<uint32_t> cpus;

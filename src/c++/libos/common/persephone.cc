@@ -12,11 +12,14 @@
 #include <psp/libos/su/RocksdbSu.hh>
 #include <psp/annot.h>
 #include "psp/libos/su/MySQLSu.hh"
+#include "psp/libos/su/PostgreSQLSu.hh"
+
 
 std::string log_dir = "./";
 std::string label = "PspApp";
 Worker *workers[MAX_WORKERS];
 uint32_t total_workers = 0;
+uint16_t query_count = 0;
 
 /********** CONTROL PLANE ******************/
 Psp::Psp(std::string &app_cfg, std::string l) {
@@ -113,6 +116,8 @@ Psp::Psp(std::string &app_cfg, std::string l) {
                     CreateWorker<RdbWorker>(i, &dpt, netw, udp_ctx);
                 } else if (type == "MySQLDB") {
                   CreateWorker<MySQLWorker>(i, &dpt, netw, udp_ctx);
+                } else if (type == "PostgreSQLDB") {
+                  CreateWorker<PostgreSQLWorker>(i, &dpt, netw, udp_ctx);
                 }
                 // Update dispatcher
                 dpt.n_workers++;

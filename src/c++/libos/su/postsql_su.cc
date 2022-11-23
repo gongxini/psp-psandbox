@@ -3,10 +3,7 @@
 //
 
 #include "psp/libos/su/PostgreSQLSu.hh"
-#include <pqxx/pqxx>
-
-
-
+#include "libpq-fe.h"
 
 int PostgreSQLWorker::setup() {
   assert(n_peers > 0);
@@ -16,67 +13,89 @@ int PostgreSQLWorker::setup() {
   return 0;
 }
 
+static void
+exit_nicely(PGconn *conn)
+{
+  PQfinish(conn);
+  exit(1);
+}
+
+
 int PostgreSQLWorker::process_request(unsigned long payload) {
   char *id_addr = rte_pktmbuf_mtod_offset(
       static_cast<rte_mbuf *>((void*)payload), char *, NET_HDR_SIZE
   );
-
+  const char *conninfo;
+  PGconn     *conn;
+  PGresult   *res;
   char *type_addr = id_addr + sizeof(uint32_t);
   char *req_addr = type_addr + sizeof(uint32_t) * 2; // also pass request size
 
-
-  pqxx::connection C("dbname = testdb user = postgres password = cohondob \
-      hostaddr = 127.0.0.1 port = 5432");
-  if (C.is_open()) {
-    pqxx::work pqxx::W(C);
-    uint32_t type = *reinterpret_cast<uint32_t *>(type_addr);
-    char* sql;
-    switch(static_cast<ReqType>(type)) {
-    case ReqType::PostgreSQL_READ_UPDATE:
-      sql = "select count(*) from sbtest1 for update;";
-      break;
-    case ReqType::PostgreSQL_UPDATE:
-      sql = "UPDATE sbtest1 SET k=k+1 WHERE id=10000;";
-      break;
-    case ReqType::PostgreSQL_READ_LOCK:
-      sql = "select count(*) from sbtest1 LOCK IN SHARE MODE;";
-      break;
-    case ReqType::PostgreSQL_TRANSACTION:
-      sql = "INSERT INTO plan SELECT id + 200001,typ,current_date + id * '1 seconds'::interval ,val FROM plan;\
-                               SELECT pg_sleep(10);\
-                               delete from plan;\
-                               COPY plan FROM './data0/dump/plan1.dat' (DELIMITER ',', NULL '');";
-      break;
-    case ReqType::PostgreSQL_VACUUM:
-      sql = "VACUUM FULL sbtest1;";
-      break;
-    default:
-      break;
-    }
-    W.exec( sql );
-    W.commit();
-  } else {
-    std::cout << "Can't open database\n";
-    return 1;
+  conninfo = "dbname = postgres";
+  conn = PQconnectdb(conninfo);
+  if (PQstatus(conn) != CONNECTION_OK) {
+    fprintf(stderr, "%s", PQerrorMessage(conn));
+    exit_nicely(conn);
   }
-  C.disconnect ();
-
-//  while (res->next()) {
-//    PSP_INFO("PostgreSQL replies: " <<  res->getString("_message"));
-//  }
-
 
   uint32_t type = *reinterpret_cast<uint32_t *>(type_addr);
+  uint32_t query_type = *reinterpret_cast<unsigned int *>(req_addr);
+  char* query;
   switch(static_cast<ReqType>(type)) {
-    case ReqType::PostgreSQL_READ_UPDATE:
-      n_noisy++;
-      break;
-    case ReqType::PostgreSQL_UPDATE:
-      n_victim++;
-      break;
-    default:
-      break;
+  case ReqType::PostgreSQL_UPDATE: {
+    if (query_type == 0) {
+      int id = rand() % 1000000 + 1;
+      std::string q = "UPDATE sbtest1 SET k=k+1 WHERE id=" + std::to_string(id) ;
+      strcpy(query, q.c_str());
+    } else if (query_type == 1) {
+      int id = rand() % 1000 + 1;
+      std::string q = "UPDATE sbtest1 SET k=k+1 WHERE id=" + std::to_string(id) ;
+      strcpy(query, q.c_str());
+    }
+    res = PQexec(conn, query);
+    break;
   }
+    case ReqType::PostgreSQL_READ: {
+      if (query_type == 0) {
+        strcpy(query,"EXPLAIN ANALYZE SELECT * FROM plan WHERE typ = 3 AND dat IS NOT NULL");
+      } else if (query_type == 1) {
+        PQexec(conn, "BEGIN");
+        PQexec(conn, "select 1 from sbtest1 for update;");
+        PQexec(conn, "SELECT pg_sleep(3)");
+        PQexec(conn, "commit");
+      } else if (query_type == 2) {
+        PQexec(conn, "BEGIN");
+        PQexec(conn, "select 1 from sbtest1 for share;");
+        PQexec(conn, "SELECT pg_sleep(3)");
+        PQexec(conn, "commit");
+      } else if (query_type == 3) {
+        PQexec(conn, "VACUUM FULL sbtest1");
+      }
+      res = PQexec(conn, query);
+      break;
+    }
+    case ReqType::PostgreSQL_INSERT: {
+      if (query_type == 0) {
+        PQexec(conn, "BEGIN");
+        PQexec(conn, "INSERT INTO plan SELECT id + 200001,typ,current_date + id * '1 seconds'::interval ,val FROM plan;");
+        PQexec(conn, "SELECT pg_sleep(10)");
+        PQexec(conn, "delete from plan");
+        PQexec(conn, "COPY plan FROM './data0/dump/plan1.dat' (DELIMITER ',', NULL '')");
+        PQexec(conn, "commit");
+      }  else if (query_type == 1) {
+        PSP_INFO("query is " << query_count);
+        query_count++;
+//        PQexec(conn, "BEGIN");
+//        PQexec(conn, "INSERT INTO plan SELECT id + 2000001,typ,current_date + id * '1 seconds'::interval ,val FROM plan where id < 500000");
+//        PQexec(conn, "commit");
+      }
+     break;
+    }
+  }
+
+  PQclear(res);
+  PQfinish(conn);
+
   n_requests++;
 
   // Set response size to 0

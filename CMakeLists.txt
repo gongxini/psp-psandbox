@@ -36,8 +36,14 @@ function(target_add_rocksdb TARGET)
 endfunction(target_add_rocksdb)
 
 # MySQL flags
-
-
+if(DEFINED ENV{PSANDBOX_POSTGRES_DIR})
+    MESSAGE(STATUS "PSANDBOX_POSTGRES_DIR is set to $ENV{PSANDBOX_POSTGRES_DIR}")
+    SET(POSTGRES_INCLUDE "$ENV{PSANDBOX_POSTGRES_DIR}/include")
+    LINK_LIBRARIES("$ENV{PSANDBOX_POSTGRES_DIR}/lib/libpq.so")
+    include_directories(${POSTGRES_INCLUDE})
+else()
+    MESSAGE(WARNING "PSANDBOXDIR environment variable is not set, building psp without Postgresql.")
+endif()
 
 # default CFLAGS
 set(COMMON_CFLAGS "-ggdb -fstack-protector -fPIC -Wall -Wextra -Wno-deprecated-declarations -Wno-uninitialized -Wno-unused-parameter -Wno-register -Wl,-zdefs -fvisibility=hidden -I/usr/include/boost -Wno-unused-variable -Wno-empty-body")

@@ -6,8 +6,8 @@
 #include <psp/libos/Request.hh>
 #include <psp/annot.h>
 
-#ifndef PERSEPHONE_SRC_C_LIBOS_SU_MYSQL_SU_H_
-#define PERSEPHONE_SRC_C_LIBOS_SU_MYSQL_SU_H_
+#ifndef PERSEPHONE_SRC_C_LIBOS_SU_PostgreSQL_SU_H_
+#define PERSEPHONE_SRC_C_LIBOS_SU_PostgreSQL_SU_H_
 
 class PostgreSQLWorker : public Worker {
  public: PostgreSQLWorker() : Worker(WorkerType::MySQL) {}

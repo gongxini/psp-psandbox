@@ -26,6 +26,9 @@ enum class ReqType {
     MySQL_UPDATE,
     MySQL_READ,
     MySQL_INSERT,
+    PostgreSQL_UPDATE,
+    PostgreSQL_READ,
+    PostgreSQL_INSERT,
     LAST,
 };
 
@@ -46,6 +49,9 @@ enum class ReqType {
     "MySQL_UPDATE",
     "MySQL_READ",
     "MySQL_INSERT",
+    "PostgreSQL_UPDATE",
+    "PostgreSQL_READ",
+    "PostgreSQL_INSERT",
 };
 
 [[gnu::unused]] static enum ReqType str_to_type(std::string const &type) {
@@ -77,6 +83,12 @@ enum class ReqType {
       return ReqType::MySQL_READ;
     }  else if (type == "MySQL_INSERT") {
       return ReqType::MySQL_INSERT;
+    } else if (type == "PostgreSQL_INSERT") {
+      return ReqType::PostgreSQL_INSERT;
+    } else if (type == "PostgreSQL_UPDATE") {
+      return ReqType::PostgreSQL_UPDATE;
+    } else if (type == "PostgreSQL_READ") {
+      return ReqType::PostgreSQL_READ;
     }
     return ReqType::UNKNOWN;
 }
