@@ -19,7 +19,7 @@ std::string log_dir = "./";
 std::string label = "PspApp";
 Worker *workers[MAX_WORKERS];
 uint32_t total_workers = 0;
-uint16_t query_count = 0;
+int query_count = 0;
 
 /********** CONTROL PLANE ******************/
 Psp::Psp(std::string &app_cfg, std::string l) {

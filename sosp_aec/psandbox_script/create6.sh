@@ -1,6 +1,6 @@
 #!/bin/bash
 
-psql postgres -U root<< EOF
+psql postgres -U root << EOF
 drop table plan;
 CREATE TABLE plan
 (
@@ -12,5 +12,5 @@ CREATE TABLE plan
 CREATE UNIQUE INDEX plan_id ON plan(id);
 CREATE INDEX plan_typ ON plan(typ);
 CREATE INDEX plan_dat ON plan(dat);
-COPY plan FROM './plan.dat' (DELIMITER ',', NULL '');
+COPY plan FROM './plan1.dat' (DELIMITER ',', NULL '');
 EOF

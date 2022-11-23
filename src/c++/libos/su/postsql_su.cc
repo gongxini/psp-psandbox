@@ -31,7 +31,7 @@ int PostgreSQLWorker::process_request(unsigned long payload) {
   char *type_addr = id_addr + sizeof(uint32_t);
   char *req_addr = type_addr + sizeof(uint32_t) * 2; // also pass request size
 
-  conninfo = "dbname = postgres";
+  conninfo = "dbname = postgres ";
   conn = PQconnectdb(conninfo);
   if (PQstatus(conn) != CONNECTION_OK) {
     fprintf(stderr, "%s", PQerrorMessage(conn));
@@ -40,54 +40,89 @@ int PostgreSQLWorker::process_request(unsigned long payload) {
 
   uint32_t type = *reinterpret_cast<uint32_t *>(type_addr);
   uint32_t query_type = *reinterpret_cast<unsigned int *>(req_addr);
-  char* query;
+
   switch(static_cast<ReqType>(type)) {
   case ReqType::PostgreSQL_UPDATE: {
+    const char* query;
     if (query_type == 0) {
       int id = rand() % 1000000 + 1;
       std::string q = "UPDATE sbtest1 SET k=k+1 WHERE id=" + std::to_string(id) ;
-      strcpy(query, q.c_str());
+      query = q.data();
     } else if (query_type == 1) {
       int id = rand() % 1000 + 1;
       std::string q = "UPDATE sbtest1 SET k=k+1 WHERE id=" + std::to_string(id) ;
-      strcpy(query, q.c_str());
+      query = q.data();
     }
     res = PQexec(conn, query);
+    if (PQresultStatus(res) != PGRES_COMMAND_OK)
+    {
+      PSP_INFO("SET failed: %s" << PQerrorMessage(conn));
+      PQclear(res);
+      exit_nicely(conn);
+    }
     break;
   }
     case ReqType::PostgreSQL_READ: {
       if (query_type == 0) {
-        strcpy(query,"EXPLAIN ANALYZE SELECT * FROM plan WHERE typ = 3 AND dat IS NOT NULL");
+        PQexec(conn, "EXPLAIN ANALYZE SELECT * FROM plan WHERE typ = 3 AND dat IS NOT NULL");
       } else if (query_type == 1) {
-        PQexec(conn, "BEGIN");
-        PQexec(conn, "select 1 from sbtest1 for update;");
-        PQexec(conn, "SELECT pg_sleep(3)");
-        PQexec(conn, "commit");
+        res = PQexec(conn, "BEGIN");
+        if (PQresultStatus(res) != PGRES_COMMAND_OK)
+        {
+          PSP_INFO("Query BEGIN failed: " << PQerrorMessage(conn));
+          PQclear(res);
+          exit_nicely(conn);
+        }
+        res = PQexec(conn, "select 1 from sbtest1 for update;");
+        if (PQresultStatus(res) != PGRES_TUPLES_OK)
+        {
+          PSP_INFO("Query SELECT failed: " << PQerrorMessage(conn));
+          PQclear(res);
+          exit_nicely(conn);
+        }
+        res = PQexec(conn, "SELECT pg_sleep(3)");
+        if (PQresultStatus(res) != PGRES_TUPLES_OK)
+        {
+          PSP_INFO("Query sleep failed: " << PQerrorMessage(conn));
+          PQclear(res);
+          exit_nicely(conn);
+        }
+        res = PQexec(conn, "END");
+        if (PQresultStatus(res) != PGRES_COMMAND_OK)
+        {
+          PSP_INFO("Query END failed: " << PQerrorMessage(conn));
+          PQclear(res);
+          exit_nicely(conn);
+        }
       } else if (query_type == 2) {
         PQexec(conn, "BEGIN");
         PQexec(conn, "select 1 from sbtest1 for share;");
         PQexec(conn, "SELECT pg_sleep(3)");
-        PQexec(conn, "commit");
+        PQexec(conn, "END");
+        PQexec(conn, "analyze");
       } else if (query_type == 3) {
         PQexec(conn, "VACUUM FULL sbtest1");
       }
-      res = PQexec(conn, query);
       break;
     }
     case ReqType::PostgreSQL_INSERT: {
       if (query_type == 0) {
         PQexec(conn, "BEGIN");
-        PQexec(conn, "INSERT INTO plan SELECT id + 200001,typ,current_date + id * '1 seconds'::interval ,val FROM plan;");
+        res = PQexec(conn, "INSERT INTO plan SELECT id + 200001,typ,current_date + id * '1 seconds'::interval ,val FROM plan;");
         PQexec(conn, "SELECT pg_sleep(10)");
         PQexec(conn, "delete from plan");
-        PQexec(conn, "COPY plan FROM './data0/dump/plan1.dat' (DELIMITER ',', NULL '')");
+        PQexec(conn, "COPY plan FROM './plan1.dat' (DELIMITER ',', NULL '')");
         PQexec(conn, "commit");
+        PQexec(conn, "analyze");
       }  else if (query_type == 1) {
-        PSP_INFO("query is " << query_count);
+        const char* query;
+        std::string q;
         query_count++;
-//        PQexec(conn, "BEGIN");
-//        PQexec(conn, "INSERT INTO plan SELECT id + 2000001,typ,current_date + id * '1 seconds'::interval ,val FROM plan where id < 500000");
-//        PQexec(conn, "commit");
+        PQexec(conn, "BEGIN");
+        q = "INSERT INTO plan SELECT id + " +  std::to_string(2000001+ (query_count-1)*500000) + ",typ,current_date + id * '1 seconds'::interval ,val FROM plan";
+        query = q.data();
+        PQexec(conn, query);
+        PQexec(conn, "commit");
       }
      break;
     }
