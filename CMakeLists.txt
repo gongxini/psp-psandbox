@@ -42,7 +42,7 @@ if(DEFINED ENV{PSANDBOX_POSTGRES_DIR})
     LINK_LIBRARIES("$ENV{PSANDBOX_POSTGRES_DIR}/lib/libpq.so")
     include_directories(${POSTGRES_INCLUDE})
 else()
-    MESSAGE(WARNING "PSANDBOXDIR environment variable is not set, building psp without Postgresql.")
+    MESSAGE(WARNING "PSANDBOXDIR environment variable is not set, building psp without pbox.")
 endif()
 
 # default CFLAGS

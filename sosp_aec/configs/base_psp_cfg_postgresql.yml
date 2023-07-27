@@ -18,7 +18,7 @@ cpus:
 log_dir: /tmp/experiments/
 n_resas: 0
 net_workers:
-- dp: CFCFS
+- dp: DARC
   ip: 192.168.10.10
   is_echo: 0
   port: 6789
