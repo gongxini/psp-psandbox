@@ -111,7 +111,7 @@ Psp::Psp(std::string &app_cfg, std::string l) {
                 n_tqs++;
                 // Create worker instance
                 if (type == "MB" or type == "TPCC") {
-                    CreateWorker<MbWorker>(i, &dpt, netw, udp_ctx);
+//                    CreateWorker<MbWorker>(i, &dpt, netw, udp_ctx);
                 } else if (type == "ROCKSDB") {
                     CreateWorker<RdbWorker>(i, &dpt, netw, udp_ctx);
                 } else if (type == "MySQLDB") {
