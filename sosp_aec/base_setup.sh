@@ -9,9 +9,11 @@ make -j 20 -C submodules/rocksdb static_lib
 make -j 20 -C submodules/rocksdb shared_lib
 
 # Setup Perséphone
-mkdir build && cd build
+mkdir build 
+cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DDPDK_MELLANOX_SUPPORT=OFF ..
-make -j 20 -C build
+make -j 20
+cd ..
 
 sudo mkdir -p /tmpfs
 mountpoint -q /tmpfs || sudo mount -t tmpfs -o size=50G,mode=1777 tmpfs /tmpfs
