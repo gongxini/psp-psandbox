@@ -122,6 +122,8 @@ Psp::Psp(std::string &app_cfg, std::string l) {
                   CreateWorker<ApacheWorker>(i, &dpt, netw, udp_ctx);
                 } else if (type == "VarnishDB") {
                   CreateWorker<ApacheWorker>(i, &dpt, netw, udp_ctx);
+                } else if (type == "MemcachedDB") {
+                  CreateWorker<ApacheWorker>(i, &dpt, netw, udp_ctx);
                 }
                 // Update dispatcher
                 dpt.n_workers++;
