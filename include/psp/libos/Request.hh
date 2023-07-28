@@ -29,6 +29,7 @@ enum class ReqType {
     PostgreSQL_UPDATE,
     PostgreSQL_READ,
     PostgreSQL_INSERT,
+    Apache_REQUEST,
     LAST,
 };
 

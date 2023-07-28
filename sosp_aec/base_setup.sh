@@ -14,6 +14,7 @@ cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DDPDK_MELLANOX_SUPPORT=OFF ..
 make -j 20
 cd ..
+export "PSP_DIR=`pwd`/" >> $HOME/.bashrc
 
 sudo mkdir -p /tmpfs
 mountpoint -q /tmpfs || sudo mount -t tmpfs -o size=50G,mode=1777 tmpfs /tmpfs

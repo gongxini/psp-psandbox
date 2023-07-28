@@ -4,16 +4,16 @@
 #include <netinet/in.h>
 #include <yaml-cpp/yaml.h>
 
-#include <psp/logging.hh>
-#include <psp/libos/persephone.hh>
-#include <psp/libos/su/NetSu.hh>
-#include <psp/libos/su/MbSu.hh>
-#include <psp/libos/su/DispatchSu.hh>
-#include <psp/libos/su/RocksdbSu.hh>
-#include <psp/annot.h>
+#include "psp/libos/su/ApacheSu.hh"
 #include "psp/libos/su/MySQLSu.hh"
 #include "psp/libos/su/PostgreSQLSu.hh"
-
+#include <psp/annot.h>
+#include <psp/libos/persephone.hh>
+#include <psp/libos/su/DispatchSu.hh>
+#include <psp/libos/su/MbSu.hh>
+#include <psp/libos/su/NetSu.hh>
+#include <psp/libos/su/RocksdbSu.hh>
+#include <psp/logging.hh>
 
 std::string log_dir = "./";
 std::string label = "PspApp";
@@ -118,6 +118,10 @@ Psp::Psp(std::string &app_cfg, std::string l) {
                   CreateWorker<MySQLWorker>(i, &dpt, netw, udp_ctx);
                 } else if (type == "PostgreSQLDB") {
                   CreateWorker<PostgreSQLWorker>(i, &dpt, netw, udp_ctx);
+                } else if (type == "ApacheDB") {
+                  CreateWorker<ApacheWorker>(i, &dpt, netw, udp_ctx);
+                } else if (type == "VarnishDB") {
+                  CreateWorker<ApacheWorker>(i, &dpt, netw, udp_ctx);
                 }
                 // Update dispatcher
                 dpt.n_workers++;
